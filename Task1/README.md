@@ -1,0 +1,1 @@
+![mindmap](task1.drawio.png)
