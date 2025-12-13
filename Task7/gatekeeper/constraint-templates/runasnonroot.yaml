@@ -1,0 +1,66 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srunasnonrootreadonlyfs
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRunAsNonRootReadOnlyFS
+      validation:
+        openAPIV3Schema:
+          type: object
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srunasnonrootreadonlyfs
+        
+        vi := input.review
+      
+        container_violations[cname] {
+          c := vi.object.spec.containers[_]
+          cname := c.name
+          not c.securityContext.runAsNonRoot
+        }
+        
+        container_violations_readonly[cname] {
+          c := vi.object.spec.containers[_]
+          cname := c.name
+          not c.securityContext.readOnlyRootFilesystem
+        }
+        
+        init_violations[cname] {
+          c := vi.object.spec.initContainers[_]
+          cname := c.name
+          not c.securityContext.runAsNonRoot
+        }
+        
+        init_violations_readonly[cname] {
+          c := vi.object.spec.initContainers[_]
+          cname := c.name
+          not c.securityContext.readOnlyRootFilesystem
+        }
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          cname := container_violations[_]
+          msg := sprintf("Container %q must set securityContext.runAsNonRoot: true", [cname])
+        }
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          cname := container_violations_readonly[_]
+          msg := sprintf("Container %q must set securityContext.readOnlyRootFilesystem: true", [cname])
+        }
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          cname := init_violations[_]
+          msg := sprintf("InitContainer %q must set securityContext.runAsNonRoot: true", [cname])
+        }
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          cname := init_violations_readonly[_]
+          msg := sprintf("InitContainer %q must set securityContext.readOnlyRootFilesystem: true", [cname])
+        }

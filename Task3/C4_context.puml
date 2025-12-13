@@ -1,0 +1,32 @@
+@startuml
+!include C4/C4_Context.puml
+
+title Диаграмма контекса PropDevelopment
+
+Person(owner, "Собственник", "")
+Person(guest, "Гость", "")
+Person(driver, "Водитель", "")
+
+System(smartHomeMobile, "Система управления ЖКУ", "Мобильное приложение для собственников и группа сервисов ЖКУ")
+System(smartDoorbell, "Интеллектуальный домофон")
+System(smartBarrier, "Интеллектуальный шлагбаум")
+
+System_Ext(accessControl, "Система контроля доступа")
+System_Ext(cameraSystem, "Система видеонаблюдения")
+
+Rel(owner, smartHomeMobile, "Управление и мониторинг")
+Rel(guest, smartDoorbell, "Запрашивает доступ у собственника")
+Rel(driver, smartBarrier, "Получение доступа по распознаванию номера")
+
+Rel(smartHomeMobile, smartDoorbell, "Управление и мониторинг")
+Rel(smartHomeMobile, smartBarrier, "Управление и мониторинг")
+
+Rel(smartDoorbell, accessControl, "Управление доступом")
+Rel(smartDoorbell, cameraSystem, "Распознавание, биометрия")
+
+Rel(smartBarrier, accessControl, "Управление доступом")
+Rel(smartBarrier, cameraSystem, "Распознавание, биометрия")
+
+
+@enduml
+

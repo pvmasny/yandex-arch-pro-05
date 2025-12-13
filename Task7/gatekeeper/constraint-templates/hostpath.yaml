@@ -1,0 +1,25 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8shostpathprohibited
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sHostPathProhibited
+      validation:
+        openAPIV3Schema:
+          type: object
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8shostpathprohibited
+        
+        vi := input.review
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          v := vi.object.spec.volumes[_]
+          v.hostPath.path
+          msg := sprintf("HostPath volume %q is not allowed", [v.name])
+        }

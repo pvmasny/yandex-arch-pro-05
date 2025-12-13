@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-secure-no-privileged
+  namespace: audit-zone
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  volumes:
+    - name: nginx-cache
+      emptyDir: { }
+    - name: nginx-run
+      emptyDir: { }
+  containers:
+    - name: nginx
+      image: nginx:1.25
+      ports:
+        - containerPort: 8080
+      securityContext:
+        runAsUser: 101
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ "ALL" ]
+        readOnlyRootFilesystem: true
+      volumeMounts:
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+      args: [ "sh", "-c", "nginx -g 'daemon off;'" ]

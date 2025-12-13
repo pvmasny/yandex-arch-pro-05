@@ -1,0 +1,2 @@
+1. audit-policy.yaml из учебника у меня не отработал, поэтому пришлось использовать другой
+2. --extra-config=apiserver.audit-log-path=/var/log/audit.log -- логи в итоге пришлось искать внутри minikube ssh через find / -name audit.log и выгражить их на хостовую машину.
