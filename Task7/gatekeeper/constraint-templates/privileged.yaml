@@ -1,0 +1,32 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sprivilegedcontainer
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPrivilegedContainer
+      validation:
+        openAPIV3Schema:
+          type: object
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sprivilegedcontainer
+        
+        vi := input.review
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          c := vi.object.spec.containers[_]
+          c.securityContext.privileged == true
+          msg := sprintf("Privileged container %q is not allowed", [c.name])
+        }
+        
+        violation[{"msg": msg}] {
+          vi.kind.kind == "Pod"
+          ic := vi.object.spec.initContainers[_]
+          ic.securityContext.privileged == true
+          msg := sprintf("Privileged initContainer %q is not allowed", [ic.name])
+        }

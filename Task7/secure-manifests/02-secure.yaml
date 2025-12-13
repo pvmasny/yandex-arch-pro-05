@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-secure-no-hostpath
+  namespace: audit-zone
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  volumes:
+    - name: home
+      emptyDir: { }
+    - name: tmp
+      emptyDir: { }
+  containers:
+    - name: alpine
+      image: alpine:3.20
+      command: [ "sh", "-c", "echo 'running without hostPath'; sleep 3600" ]
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ "ALL" ]
+        readOnlyRootFilesystem: true
+      env:
+        - name: HOME
+          value: /home/nonroot
+      volumeMounts:
+        - name: home
+          mountPath: /home/nonroot
+        - name: tmp
+          mountPath: /tmp
